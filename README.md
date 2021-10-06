@@ -53,13 +53,13 @@ It displays a simple striped sprite against a background. It should be easy to t
 * press RIGHT to play music on PSG (square wave) channel 1
 * press DOWN to play music on PSG (square wave) channel 2
 * press LEFT to play music on PSG noise channel (channel 3)
-* press 1 to test volume clipping. If the sound volume appears to do not change it means it's clipping, which is very common on a SEGA Master System, uncommon on a SEGA MegaDrive/Genesis.
+* press 1 to test volume clipping. If the sound volume appears to do not change it means it's clipping.
 * press START to toggle stereo mode (headphones only!)
 * press 2 to exit
 
 ### Pad Tests
 
-You can test your SEGA Game Gear buttons and external SEGA Master System pad (if connected to the ext port). If no key is pressed/held/released in approx 3 seconds, the test will end.
+You can test your SEGA Game Gear buttons, and SEGA Master System pad buttons too, if one is connected to the ext port. If no key is pressed/held/released in approx 3 seconds, the test will end.
 
 ### System Info
 
