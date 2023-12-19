@@ -4,7 +4,7 @@
 ************************************************************************ */
 
 #define MAJOR_VER 0
-#define MINOR_VER 11
+#define MINOR_VER 13
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -60,7 +60,7 @@ __sfr __at 0x06 GGStereoPort;
 unsigned char cur_menu_item, main_menu_items, pointer_anim;
 
 /* hardware tests results */
-bool has_BIOS_GG, is_Japanese, do_Port3E_works, CMOS_CPU;
+bool has_BIOS_GG, is_Japanese, CMOS_CPU;
 
 /*  ****************** for PADS TESTS *********************** */
 
@@ -337,12 +337,12 @@ void load_menu_assets (void) {
   SMS_autoSetUpTextRenderer();
 }
 
-void static_screen (void* tiles, void* tilemap, void* palette, void* alt_tiles) {
-  bool alt=false;
+void static_screen (void* tiles, void* tilemap, void* palette, void* alt_tiles, void* alt_tiles_2) {
+  unsigned char alt=0;
   SMS_displayOff();
   SMS_initSprites();
   SMS_copySpritestoSAT();
-  SMS_loadPSGaidencompressedTiles (tiles,0);
+  SMS_loadPSGaidencompressedTiles(tiles,0);
   SMS_loadSTMcompressedTileMap (0,0,tilemap);
   GG_loadBGPalette(palette);
   SMS_displayOn();
@@ -351,11 +351,25 @@ void static_screen (void* tiles, void* tilemap, void* palette, void* alt_tiles) 
     kp=SMS_getKeysPressed();
     if (kp & (PORT_A_KEY_2|PORT_B_KEY_2))
       break;
-    if (kp & (PORT_A_KEY_1|PORT_B_KEY_1))
+    if (kp & (PORT_A_KEY_1|PORT_B_KEY_1)) {
       if (alt_tiles==NULL)
         break;
-      else
-        alt=!alt, SMS_loadPSGaidencompressedTiles (((alt)?alt_tiles:tiles),0);
+      else {
+        if (++alt==((alt_tiles_2==NULL)?2:3))
+          alt=0;
+        switch (alt) {
+          case 0:
+            SMS_loadPSGaidencompressedTiles(tiles,0);
+            break;
+          case 1:
+            SMS_loadPSGaidencompressedTiles(alt_tiles,0);
+            break;
+          default:
+            SMS_loadPSGaidencompressedTiles(alt_tiles_2,0);
+            break;
+        }
+      }
+    }
   }
   SMS_displayOff();
 }
@@ -408,7 +422,7 @@ void drop_shadow_striped_sprite (bool striped) {
   SMS_displayOff();
   SMS_initSprites();
   SMS_copySpritestoSAT();
-  UNSAFE_SMS_loadZX7compressedTiles (AlexKidd__tiles__zx7,0);
+  SMS_loadZX7compressedTiles (AlexKidd__tiles__zx7,0);
   SMS_loadSTMcompressedTileMap (0,0,AlexKidd__tilemap__stmcompr);
   GG_loadBGPalette(AlexKidd__palette__bin);
   if (striped) {
@@ -525,13 +539,13 @@ void video_tests (void) {
     }
     if (kp & (PORT_A_KEY_1|PORT_A_KEY_2|PORT_B_KEY_1|PORT_B_KEY_2)) {
       switch (cur_menu_item) {
-        case 0:static_screen(PLUGE__tiles__psgcompr,PLUGE__tilemap__stmcompr,PLUGE__palette__bin,NULL); break;
+        case 0:static_screen(PLUGE__tiles__psgcompr,PLUGE__tilemap__stmcompr,PLUGE__palette__bin,NULL,NULL); break;
         case 1:color_cycle(color_bars__tiles__psgcompr,color_bars__tilemap__stmcompr); break;
-        case 2:static_screen(color_bleed__tiles__psgcompr,color_bleed__tilemap__stmcompr,color_bleed__palette__bin,color_bleed2__tiles__psgcompr); break;
-        case 3:static_screen(grid__tiles__psgcompr,grid__tilemap__stmcompr,grid__palette__bin,NULL); break;
-        case 4:static_screen(stripes__tiles__psgcompr,fullscreen__tilemap__stmcompr,bw_palette_bin,checkerboard__tiles__psgcompr); break;
+        case 2:static_screen(color_bleed__tiles__psgcompr,color_bleed__tilemap__stmcompr,color_bleed__palette__bin,color_bleed2__tiles__psgcompr,NULL); break;
+        case 3:static_screen(grid__tiles__psgcompr,grid__tilemap__stmcompr,grid__palette__bin,NULL,NULL); break;
+        case 4:static_screen(stripes__tiles__psgcompr,fullscreen__tilemap__stmcompr,bw_palette_bin,v_stripes__tiles__psgcompr,checkerboard__tiles__psgcompr); break;
         case 5:fullscreen(); break;
-        case 6:static_screen(linearity__tiles__psgcompr,linearity__tilemap__stmcompr,linearity__palette__bin,NULL); break;
+        case 6:static_screen(linearity__tiles__psgcompr,linearity__tilemap__stmcompr,linearity__palette__bin,NULL,NULL); break;
         case 7:drop_shadow_striped_sprite(false);break;
         case 8:drop_shadow_striped_sprite(true);break;
         case VIDEO_MENU_ITEMS-1:go_back=true; break;
@@ -616,7 +630,7 @@ void pad_tests (void) {
   SMS_displayOff();
   SMS_initSprites();
   SMS_copySpritestoSAT();
-  UNSAFE_SMS_loadZX7compressedTiles (pads__tiles__zx7,0);
+  SMS_loadZX7compressedTiles (pads__tiles__zx7,0);
   SMS_loadSTMcompressedTileMap (0,0,pads__tilemap__stmcompr);
   GG_loadBGPalette(pads__palette__bin);
 
